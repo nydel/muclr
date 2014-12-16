@@ -61,6 +61,24 @@
 		 :credential-type (if credential-type credential-type nil)
 		 :contact-email (if contact-email contact-email (format nil "muclr@~a" (machine-instance)))))
 
+(defun register-platform (platform &key registrar-hostname registrar-port)
+  (let* ((socket
+	  (socket-connect (if registrar-hostname registrar-hostname
+			      "muclr.org")
+			  (if registrar-port registrar-port
+			      8999)
+			  :protocol :stream
+			  :element-type 'character
+			  :timeout 30
+			  :deadline 120
+			  :nodelay t
+			  :local-host (hostname platform)
+			  :local-port 0))
+	 (stream
+	  (socket-stream socket)))
+    (format stream "hello from the server file.")))
+
+
 (defvar *platformname* nil)
 (defvar *systemversion* nil)
 (defvar *hostname* nil)
