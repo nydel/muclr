@@ -5,12 +5,14 @@
 (defpackage :multi-user-common-lisp-repl-server
   (:nicknames :muclr-server :muclr-s)
   (:use :cl :bordeaux-threads :cl-ppcre :usocket)
-  (:export :start-server :stop-servers))
+  (:export :start-server :stop-servers
+	   :platform :registered-platform
+	   :mold-platform))
 
 (in-package :muclr-server)
 
 (defclass platform ()
-  ((name :initarg :platform-name
+  ((name :initarg :name
 	 :initform (error "Must supply a platform name.")
 	 :accessor name)
    (hostname :initarg :hostname
@@ -49,13 +51,23 @@
 	      :initform nil
 	      :accessor leasetime)))
 
+(defun mold-platform (&key name hostname port maxusers timecreated credential-type contact-email)
+  (make-instance 'platform
+		 :name (if name name (format nil "muclr~d" (get-universal-time)))
+		 :hostname (if hostname hostname (machine-instance))
+		 :port (if port port 9999)
+		 :maxusers (if maxusers maxusers 99)
+		 :timecreated (if timecreated timecreated (get-universal-time))
+		 :credential-type (if credential-type credential-type nil)
+		 :contact-email (if contact-email contact-email (format nil "muclr@~a" (machine-instance)))))
+
 (defvar *platformname* nil)
 (defvar *systemversion* nil)
 (defvar *hostname* nil)
 (defvar *port* nil)
 (defvar *systemlogin* nil)
 (defvar *systempassword* nil)
-(setf *systemname* "muclr&")
+(setf *platformname* "muclr&")
 (setf *systemversion* "0.010 alpha")
 (setf *hostname* "main.platforms.muclr.org")
 (setf *port* 9001)
@@ -97,7 +109,7 @@
 
 (defun &hr-greet (stream)
   (format stream "~&gateway connect to ~a version ~a on ~a port ~d"
-	  *systemname* *systemversion* *hostname* *port*)
+	  *platformname* *systemversion* *hostname* *port*)
   (terpri stream)
   (force-output stream))
 
