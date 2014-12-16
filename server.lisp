@@ -9,7 +9,47 @@
 
 (in-package :muclr-server)
 
-(defvar *systemname* nil)
+(defclass platform ()
+  ((name :initarg :platform-name
+	 :initform (error "Must supply a platform name.")
+	 :accessor name)
+   (hostname :initarg :hostname
+	     :initform (error "Must supply a platform's hostname.")
+	     :accessor hostname)
+   (port :initarg :port
+	 :initform (error "Must supply a platform's port number.")
+	 :accessor port)
+   (maxusers :initarg :maxusers
+	     :initform (error "Must supply a maximum number of users.")
+	     :accessor maxusers)
+   (timecreated :initarg :timecreated
+		:initform (get-universal-time)
+		:accessor timecreated)
+   (credential-type :initarg :credential-type
+		    :initform nil
+		    :accessor credential-type)
+   (contact-email :initarg :contact-email
+		  :initform (error "Must supply a contact email.")
+		  :accessor contact-email)))
+
+(defclass registered-platform (platform)
+  ((official-p :initarg :official-p
+	       :initform nil
+	       :accessor official-p)
+   (registrar :initarg :registrar
+	      :initform nil
+	      :accessor registrar)
+   (id :initarg :id
+       :initform nil
+       :accessor id)
+   (timeregistered :initarg :timeregistered
+		   :initform nil
+		   :accessor timeregistered)
+   (leasetime :initarg :leasetime
+	      :initform nil
+	      :accessor leasetime)))
+
+(defvar *platformname* nil)
 (defvar *systemversion* nil)
 (defvar *hostname* nil)
 (defvar *port* nil)
@@ -20,21 +60,33 @@
 (setf *hostname* "main.platforms.muclr.org")
 (setf *port* 9001)
 
+;; utilities for terminal interaction
+
 (defun clean-line (string)
   "get rid of trailing return carraiges on a #'readline string"
   (regex-replace-all "\\r" string ""))
+
+(defun read-line2 (&optional (stream *standard-input*) (sb-impl::eof-error-p t) eof-value recursive-p)
+  (clean-line
+   (read-line (when stream stream)
+	      (when sb-impl::eof-error-p sb-impl::eof-error-p)
+	      (when eof-value eof-value)
+	      (when recursive-p recursive-p))))
+
+
+
+
+;; handling requests
 
 (defun &hr-login-prompt (stream)
   (let ((login1 (progn
 		  (format stream "login: ")
 		  (force-output stream)
-		  (clean-line
-		  (read-line stream))))
+		  (read-line2 stream)))
 	(pass1 (progn
 		 (format stream "password: ")
 		 (force-output stream)
-		 (clean-line
-		 (read-line stream)))))
+		 (read-line2 stream))))
 	(terpri stream)
 	(list login1 pass1)))
 
@@ -51,15 +103,14 @@
 
 (defun handle-request (stream)
 ;; placeholder repl section of handler function family
-  (let* ((line (read-line stream))
-	 (line-clean (regex-replace-all "\\r" line "")))
-    (format stream "STREAM>> ~a" line-clean)
-    (format *standard-output* "STDIO>> ~a~&" line-clean)
+  (let ((line (read-line2 stream)))
+    (format stream "STREAM>> ~a" line)
+    (format *standard-output* "STDIO>> ~a~&" line)
     (terpri stream)
     (terpri *standard-output*)
     (force-output stream)
     (force-output *standard-output*)
-    (unless (or (string-equal line-clean "quit") (string-equal line-clean ""))
+    (unless (or (string-equal line "quit") (string-equal line ""))
       (handle-request stream))))
 
 (defun &hr-master (stream)
