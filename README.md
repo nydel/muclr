@@ -1,9 +1,8 @@
 multi-user common lisp repl
 ========
 
-About MUCLR: Know this Common Lisp system to comprise a part of the larger
-:MUCLR project, which may contain multiple subsystems/subpackages nodally-
-related to the master.
+Know this Common Lisp system to comprise a part of the larger :MUCLR project,
+which may contain multiple subsystems/subpackages nodally-related to the master.
 
 Here have we :MUCLR-SERVER which creates server objects to optionally register
 with the :MUCLR master listing - accept and handle incoming requests from end-
