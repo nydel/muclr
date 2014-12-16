@@ -13,15 +13,26 @@
 (defun initialize ()
   (format t "okay..."))
 
+(defun &hr-parse-platform (stream)
+  (let ((line (muclr-s::read-line2 stream)))
+    ;;then do something with the platform info
+))
+
+(defun handle-request (stream)
+  (let ((line (muclr-s::read-line2 stream)))
+    (format stream "STREAM>~a" line)
+    (format *standard-output* "STDIO>~a~&" line)
+    (terpri stream)
+    (terpri *standard-output*)
+    (force-output stream)
+    (force-output *standard-output*)
+    (unless (string-equal line "/platform")
+      (&hr-parse-platform stream))
+    (unless (or (string-equal line "quit") (string-equal line ""))
+      (handle-request stream))))
+
 (defun &hr-master (stream)
-  (format stream "muclr.org registrar!")
-  (terpri stream)
-  (force-output stream)
-  (let ((line
-	 (muclr-s::read-line2 stream)))
-    (format stream "ok it was ~a that you wrote." line))
-  (terpri stream)
-  (force-output stream))
+  (handle-request stream))
 
 
 (defun run-server (socket)
