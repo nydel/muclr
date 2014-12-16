@@ -1,0 +1,239 @@
+About :MUCLR
+
+Know this Common Lisp system to comprise a part of the larger :MUCLR project,
+which may contain multiple subsystems/subpackages nodally-related to the master.
+
+Here have we :MUCLR-SERVER which creates server objects to optionally register
+with the :MUCLR master listing - accept and handle incoming requests from end-
+users - log in detail all activity optionally and with transparency.
+
+The :MUCLR project is a management system involving a server and end-users of
+different privilege levels. Its goal is ultimately to incorporate an abstract
+social aspect, and its implementation, right into the Common Lisp REPL. This
+will include a number of inherent prospects canonically yet will feature an
+expansion mechanism allowing users to modify existing and create new widgets
+whose purposes fit into the scope of :MUCLR. Also featured will be simple chat
+and file sharing, both facets including encryption transparent to the user and
+configurable to suit the cryptographic tastes of the individual.
+
+A :MUCLR hub (we must decide on what we call a running instance of this software
+along with the hub description, which will need to be registered somewhere for
+listing) will be an object created inside a deamonized Common Lisp - or possibly
+binary - process allocated as a thread on the serving computer system. We do not
+like hub for the official term and we put a pin in this.
+
+Temporarily referring to a MUCLR instance as a Platform. Here is a mock init on
+the client end folllowed by a mock view of a request for known registered server
+objects.
+
+
+================================================================================
+--------------------------------------------------------------------------------
+================================================================================
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+The remainder of this file is comprised of sloppy notes for nydel's benefit.
+Probably best to ignore.
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+(initialization of muclr for end-user [mock])
+--------------------------------------------------------------------------------
+
+CL-USER> (psara:init)
+
+attempting to initiate muclr...T
+initiation success; send key to format details & K for key (nNsyYv{Return}VA):k
+
+n: none - N: never - s: short-form - y: yes - Y: always - v: verbose (default)
+V: extra-verbose - A: all
+
+send key to format details (nNsyYv{Return}VA):v
+
+---------- (v)erbose detail for :MUCLR end-user initiation ----------
+
+--- :MUCLR Version: 01.010 Alpha
+--- LiSP Implementation: SBCL
+--- Swank Presence: 
+
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+(request for known registered server objects [mock])
+--------------------------------------------------------------------------------
+
+
+CL-USER> (muclr:list :optional-non-canonical-registrar-list NIL)
+
+sending query to registrar.muclr.org...T - downloading information...T
+query success; send key to format details & K for key/info (nNsyYv{Ret}VA):{Ret}
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+ -------- Canonically-Registered MUCLR Platforms Official Listings... ---------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+NAME:     MUCLR Development Official              
+ABOUT:    This is strictly Development for Canonical MUCLR releases ONLY. See
+          CLPRiD #0104010199 for MUCLR hacking, tinkering, widgets etcetera.
+TAGS:     muclr, development, official
+                                                  PORT: 9913     LATENCY: 0093MS
+URI:      http://platform.muclr.org/?q=dev        CERT: plain    USERS: 0010/0099
+CLPRiD:   #0103020119         DATE: 2014-12-13    LEASE: 1095D23H22M
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+NAME:     MUCLR Social Dinner Party
+ABOUT:    Official MUCLR Royal Court Social Platform. For those on their absolute
+          best behavior ONLY. Save low-brow idea and chat for elsewhere.
+TAGS:     muclr, social, official, chat
+                                                  PORT: 99102    LATENCY: 0181MS
+URI:      http://platform.muclr.org/?q=social     CERT: none     USERS: 0046/0199
+CLPRiD:   #0101020029         DATE: 2014-12-13    LEASE: 1095D23H22M
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+NAME:     MUCLR Social Afterparty
+ABOUT:    Official MUCLR Royal Court Social Platform. No content is inappropriate
+          on this Platform - SOCIALLY-SPEAKING ONLY - Do Not Use The Internet For
+          any illicit purpose - ever. Here, if drinking tea, pinkies wherever you
+          like, and don't worry about crumbs or occasional wine spills.
+TAGS:     muclr, social, official, chat, nsfw, nsfh
+                                                  PORT: 99201    LATENCY: 0213MS
+URI:      http://platform.muclr.org/?q=social     CERT: plain    USERS: 0022/0199
+CLPRiD:   #0101020239         DATE: 2014-12-13    LEASE: 1095D23H22M
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+NAME:     MUCLR Non-Canonical Development
+ABOUT:    For hacking, tinkering, forking, widgets, etcetera.. All things MUCLR
+          and Development are appropriate here! See CLPRiD #0103020119 for the
+          Team's collective work on the next Official MUCLR release.
+TAGS:     muclr, development, official, non-canonical, hacking
+                                                  PORT: 9923     LATENCY: 0083MS
+URI:      http://platform.muclr.org/?q=social     CERT: none     USERS: 0076/0099
+CLPRiD:   #0104010199         DATE: 2014-12-13    LEASE: 1095D23H22M
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+ -------- Canonically-Registered MUCLR Platforms Official Listings... ---------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+T
+
+CL-USER> (muclr:join :id 0103020119)
+
+looking up MUCLR Platform by CLRiD...T - connecting...T
+connected! 
+
+--------------------------------------------------------------------------------
+--- /muclr&/MUCLR Official Development/ -------------------------------------------
+--------------------------------------------------------------------------------
+--- /muclr&/  This Platform will always immediately request credentials.
+--- /muclr&/  Three failed attempts results in a ban of at least 24h.
+--- /muclr&/  By attempting to login, you agree to our ToS. http://tos.muclr.org/
+--- /muclr&/  A prompt for credentials will follow. Email nydel for support.
+--------------------------------------------------------------------------------
+--- /muclr&/ login> nydel
+--- /muclr&/ passw> password-ishTypeThing
+--------------------------------------------------------------------------------
+--- /muclr&/  Your Credentials have been Validated!
+--- /muclr&/  Your Request to Assume the Platform has been Accepted!
+--- /muclr&/  Welcome. Would you take a moment to announce? (yY?n{Ret}Nw) /muclr&/>y
+--- /muclr&/  Announce Executing...T
+--- /muclr&/  Setting you on Platform. Evaluate "(quit)" to return to CL softly,
+--- /muclr&/  or evaluate "(exit)" to leave the Platform first..
+--- /muclr&/> (quit)
+--------------------------------------------------------------------------------
+--- /muclr&/MUCLR Official Development/ -------------------------------------------
+--------------------------------------------------------------------------------
+
+CL-USER> (muclr:/ muclr& who)
+--- /muclr&/  (ISIS, MIERCOLEDI, NYDEL, PEST)
+CL-USER> (muclr:/ muclr& hail 'isis)
+--- /muclr&/  T
+--- /muclr&/  ISIS HAILS
+CL-USER> (muclr:/ muclr& look)
+--- /muclr&/  (THEROOM, XOB)
+CL-USER> (muclr:/ muclr& enter 'THEROOM)
+--- /muclr&/  T
+--- /muclr&/  (ISIS "this is what a chat message will look like in a room." THEROOM 
+3627453230)
+--- /muclr&/  (PEST "i think this is a really good idea, but i'm not sure as to wheth
+er or not it's something we can really get done." THEROOM 3627453369)
+CL-USER> (+ 3 5)
+8
+--- /muclr&/  (ISIS "agreed, pest. so, what, then?" THEROOM 3627453482)
+CL-USER> (+ 5 3)
+8
+CL-USER> (muclr:/ muclr& @ 'THEROOM)
+--- /muclr&/> people would use it. if i can get enough of it written that it begins
+ to take shape, maybe the necessary help will be interested.
+--- /muclr&/  T
+--- /muclr&/  (NYDEL "people would use it. if i can get enough of it written that i
+t begins to take shape, maybe the necessary help will be interested." THEROOM 36
+27453781)
+CL-USER> (muclr:/ muclr& @ 'THEROOM "right?")
+--- /muclr&/  T
+--- /muclr&/  (NYDEL "right?" THEROOM 3627453874)
+--- /muclr&/  (ISIS "probably. it is a really good idea after all." THEROOM 3627453
+988)
+--- /muclr&/  (PEST "it is possible." THEROOM 3627454038)
+CL-USER> (muclr:/ muclr& @ 'THEROOM)
+--- /muclr&/> i'm in if y'all are..
+--- /muclr&/  T
+--- /muclr&/  (NYDEL "i'm in if y'all are.." THEROOM 3627454185)
+CL-USER> (muclr:/ muclr& @? 'THEROOM '("YES" "NO"))
+--- /muclr&/  Prompting Users in THEROOM For Selection From '("YES" "NO")
+--- /muclr&/  At 3627683540 Timing Out After 60 Seconds...
+--- /muclr&/  T
+--- /muclr&/  NYDEL is prompting 'THEROOM for '("YES" "NO")
+--- /muclr&/  USE (@?!) to Respond Within 60 Seconds...
+CL-USER> (* 3 111)
+333
+CL-USER> (* 4 1111)
+4444
+CL-USER> (format t "i'm executing these commands before muclr sends anything.")
+i'm executing these commands before muclr sends anything.
+NIL
+CL-USER> (+ 5 3)
+8
+--- /muclr&/  (ISIS @NYDEL "YES" 'THEROOM 3627683559)
+--- /muclr&/  (PEST @NYDEL "YES" 'THEROOM 3627683581)
+CL-USER> (* 5 3)
+15
+CL-USER> (muclr:/ muclr& @?! 'THEROOM)
+--- /muclr&/  Answering NYDEL's Prompt For '("YES" "NO")
+--- /muclr&/> yes
+--- /muclr&/  Not A Valid Choice. Use? --- /muclr&/> (ynr{Ret}k){Ret}
+--- /muclr&/> (string "YES")
+--- /muclr&/  Answer "YES" Recognized. Confirm? ---muclr&/> (y{Ret}nrk){Ret}
+--- /muclr&/  T
+--- /muclr&/  (NYDEL @NYDEL "YES" 'THEROOM 362768590)
+CL-USER> (+ 10 10 10)
+30
+--- /muclr&/  (("YES" ISIS PEST NYDEL)("NO" NIL)(NIL MIERCOLEDI))
+T
+CL-USER> (defvar temp-results *)
+30
+CL-USER> (setq temp-results mucrl&:*)
+(("YES" ISIS PEST NYDEL)("NO" NIL)(NIL MIERCOLEDI))
+CL-USER>
