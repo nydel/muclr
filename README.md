@@ -23,4 +23,4 @@ listing) will be an object created inside a deamonized Common Lisp - or possibly
 binary - process allocated as a thread on the serving computer system. We do not
 like hub for the official term and we put a pin in this.
 
-Temporarily referring to a MUCLR instance as a Platform.
+Temporarily referring to a MUCLR instance as a Platform (that might work).
