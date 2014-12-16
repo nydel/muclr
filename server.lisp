@@ -15,9 +15,9 @@
 (defvar *port* nil)
 (defvar *systemlogin* nil)
 (defvar *systempassword* nil)
-(setf *systemname* "cl:pslog-server")
+(setf *systemname* "muclr&")
 (setf *systemversion* "0.010 alpha")
-(setf *hostname* "jobono ubuntu")
+(setf *hostname* "main.platforms.muclr.org")
 (setf *port* 9001)
 
 (defun clean-line (string)
@@ -78,18 +78,18 @@
      (let ((stream (socket-stream (socket-accept socket))))
        (make-thread (lambda () (with-open-stream (stream stream)
 				 (&hr-master stream)))
-		    :name "pslog-server-request-handler-thread"))))
+		    :name "muclr-server-request-handler-thread"))))
 
 (defun start-server (port)
   (let ((socket (socket-listen *wildcard-host* port :reuse-address t)))
     (make-thread (lambda () (unwind-protect
 				 (run-server socket)
 			      (socket-close socket)))
-		 :name "pslog-server-thread")))
+		 :name "muclr-server-thread")))
 
 (defun stop-servers ()
   (mapcar #'destroy-thread (remove-if-not
 			    (lambda (y)
 			      (string-equal
-			       (slot-value y 'sb-thread::name) "pslog-server-thread"))
+			       (slot-value y 'sb-thread::name) "muclr-server-thread"))
 			    (all-threads))))
