@@ -49,7 +49,7 @@ Probably best to ignore.
 (initialization of muclr for end-user [mock])
 --------------------------------------------------------------------------------
 
-CL-USER> (psara:init)
+CL-USER> (muclr:init)
 
 attempting to initiate muclr...T
 initiation success; send key to format details & K for key (nNsyYv{Return}VA):k
