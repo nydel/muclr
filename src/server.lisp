@@ -66,14 +66,7 @@
 	  (socket-connect (if registrar-hostname registrar-hostname
 			      "muclr.org")
 			  (if registrar-port registrar-port
-			      8999)
-			  :protocol :stream
-			  :element-type 'character
-			  :timeout 30
-			  :deadline 120
-			  :nodelay t
-			  :local-host (hostname platform)
-			  :local-port 0))
+			      8999)))
 	 (stream
 	  (socket-stream socket)))
     (format stream "hello from the server file.")))
