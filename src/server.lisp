@@ -1,9 +1,11 @@
-(ql:quickload '(:bordeaux-threads
-		:cl-ppcre
-		:usocket))
+;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
 
-(defpackage :multi-user-common-lisp-repl-server
-  (:nicknames :muclr-server :muclr-s)
+;(ql:quickload '(:bordeaux-threads
+;		:cl-ppcre
+;		:usocket))
+
+(defpackage :muclr-server
+;  (:nicknames :muclr-server)
   (:use :cl :bordeaux-threads :cl-ppcre :usocket)
   (:export :start-server :stop-servers
 	   :platform :registered-platform

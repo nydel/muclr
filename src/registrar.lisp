@@ -1,10 +1,13 @@
-(ql:quickload '(:bordeaux-threads
-		:cl-ppcre
-		:usocket))
-(load "server.lisp")
+;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
 
-(defpackage :multi-user-common-lisp-repl-registrar
-  (:nicknames :muclr-registrar :muclr-reg :muclr-r)
+;(ql:quickload '(:bordeaux-threads
+;		:cl-ppcre
+;		:usocket))
+
+;(load "server.lisp")
+
+(defpackage :muclr-registrar
+;  (:nicknames :muclr-registrar)
   (:use :cl :bordeaux-threads :cl-ppcre :usocket)
   (:export :initialize))
 
@@ -13,45 +16,45 @@
 (defun initialize ()
   (format t "okay..."))
 
-(defun &hr-parse-platform (stream)
-  (let ((line (muclr-s::read-line2 stream)))
+;(defun &hr-parse-platform (stream)
+;  (let ((line (muclr-s::read-line2 stream)))
     ;;then do something with the platform info
-))
+;))
 
-(defun handle-request (stream)
-  (let ((line (muclr-s::read-line2 stream)))
-    (format stream "STREAM>~a" line)
-    (format *standard-output* "STDIO>~a~&" line)
-    (terpri stream)
-    (terpri *standard-output*)
-    (force-output stream)
-    (force-output *standard-output*)
-    (unless (string-equal line "/platform")
-      (&hr-parse-platform stream))
-    (unless (or (string-equal line "quit") (string-equal line ""))
-      (handle-request stream))))
+;(defun handle-request (stream)
+;  (let ((line (muclr-s::read-line2 stream)))
+;    (format stream "STREAM>~a" line)
+;    (format *standard-output* "STDIO>~a~&" line)
+;    (terpri stream)
+;    (terpri *standard-output*)
+;    (force-output stream)
+;    (force-output *standard-output*)
+;    (unless (string-equal line "/platform")
+;      (&hr-parse-platform stream))
+;    (unless (or (string-equal line "quit") (string-equal line ""))
+;      (handle-request stream))))
 
-(defun &hr-master (stream)
-  (handle-request stream))
+;(defun &hr-master (stream)
+;  (handle-request stream))
 
 
-(defun run-server (socket)
-  (loop (wait-for-input socket)
-     (let ((stream (socket-stream (socket-accept socket))))
-       (make-thread (lambda () (with-open-stream (stream stream)
-				 (&hr-master stream)))
-		    :name "muclr-registrar-request-handler-thread"))))
+;(defun run-server (socket)
+;  (loop (wait-for-input socket)
+;     (let ((stream (socket-stream (socket-accept socket))))
+;       (make-thread (lambda () (with-open-stream (stream stream)
+;				 (&hr-master stream)))
+;		    :name "muclr-registrar-request-handler-thread"))))
 
-(defun start-server (port)
-  (let ((socket (socket-listen *wildcard-host* port :reuse-address t)))
-    (make-thread (lambda () (unwind-protect
-				 (run-server socket)
-			      (socket-close socket)))
-		 :name "muclr-registrar-thread")))
+;(defun start-server (port)
+;  (let ((socket (socket-listen *wildcard-host* port :reuse-address t)))
+;    (make-thread (lambda () (unwind-protect
+;				 (run-server socket)
+;			      (socket-close socket)))
+;		 :name "muclr-registrar-thread")))
 
-(defun stop-servers ()
-  (mapcar #'destroy-thread (remove-if-not
-			    (lambda (y)
-			      (string-equal
-			       (slot-value y 'sb-thread::name) "muclr-registrar-thread"))
-			    (all-threads))))
+;(defun stop-servers ()
+;  (mapcar #'destroy-thread (remove-if-not
+;			    (lambda (y)
+;			      (string-equal
+;			       (slot-value y 'sb-thread::name) "muclr-registrar-thread"))
+;			    (all-threads))))

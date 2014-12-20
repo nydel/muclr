@@ -1,3 +1,5 @@
+;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
+
 (in-package :cl-user)
 
 (defpackage :muclr-asd
@@ -7,7 +9,7 @@
 
 (defsystem :muclr
   :serial t
-  :version "0.1.01"
+  :version "1.10.101"
   :author "<nydel@muclr.org>"
   :license "LLGPL v3.0 Modified"
   :description "Multi-User Common Lisp REPL aka MUCLR is a project management
@@ -28,9 +30,6 @@
 	       :usocket)
   :components ((:module "src"
 		:serial t
-		:components ((:file "package")
-			     (:file "server")
+		:components ((:file "server")
 			     (:file "registrar")
 			     (:file "client")))))
-
-(in-package :muclr)
