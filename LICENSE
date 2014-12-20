@@ -1,5 +1,18 @@
 Multi-User Common Lisp REPL
 
+Above All & Ubiquitously, MUCLR - as a Library, as a System, as a Package, as a
+Project, as a Utility & as Anything and All Things Otherwise &/or Else - belongs
+to Joshua Ryan "Nydel" Trout in Absolute Entirety & Without Compromise. This
+Most Initial Copyright - Drafted in 2014 and Spanning To Current Time - Does
+Violently Supercede All Other Licensing - Including the LLGPL - Including The
+GNU Public License - Including All Else - Except in Cases Where Contrary Legal
+Notion Might Benefit the Copyright Holder, as Determined - in Perpetuity - by The
+Copyright Holder Himself, or, in Event of the Demise of the Copyright Holder, as
+well as in the Event of Indisposition of the Copyright Holder, as Determined by
+the Representative of the Deceased &or Indisposed.
+
+--------------------------------------------------------------------------------
+
 MUCLR is licensed under the terms of the Lisp Lesser GNU
 Public License (http://opensource.franz.com/preamble.html), known as
 the LLGPL. The LLGPL consists of a preamble (see above URL) and the
