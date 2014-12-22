@@ -1,4 +1,9 @@
 ;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
+;;;; $Id: muclr.asd 110101 2014-12-22 14:38:30 PDT nydel $
+;;;; $URL https://github.com/nydel/muclr/blob/master/muclr.asd $
+;;;; $HOMEPAGE http://www.muclr.org $
+
+;;;; See the LICENSE file for licensing information.
 
 (in-package :cl-user)
 
