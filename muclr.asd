@@ -37,4 +37,5 @@
 		:serial t
 		:components ((:file "server")
 			     (:file "registrar")
-			     (:file "client")))))
+			     (:file "client")
+			     (:file "package")))))
