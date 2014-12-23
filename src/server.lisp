@@ -1,7 +1,7 @@
 ;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
 
 (defpackage :muclr-server
-  (:use :cl :bordeaux-threads :cl-ppcre :usocket)
+  (:use :cl :bordeaux-threads :cl-ppcre :ironclad :usocket)
   (:export :start-server :stop-servers
 	   :platform :registered-platform
 	   :mold-platform))
@@ -76,9 +76,17 @@
 (defvar *systemlogin* nil)
 (defvar *systempassword* nil)
 (setf *platformname* "muclr&")
-(setf *systemversion* "0.010 alpha")
+(setf *systemversion* "1.10.101")
 (setf *hostname* "main.platforms.muclr.org")
-(setf *port* 9001)
+(setf *port* 9912)
+
+;; credential utilities
+
+(defun hash-string (string &key digest-sequence)
+  (byte-array-to-hex-string
+   (digest-sequence
+    (if digest-sequence digest-sequence :md5)
+    (ascii-string-to-byte-array string))))
 
 ;; utilities for terminal interaction
 
@@ -110,8 +118,17 @@
 	(terpri stream)
 	(list login1 pass1)))
 
+(defun &hr-login-string (list)
+  (let ((login-string
+	 (concatenate 'string
+		      (car list) ":"
+		      (cadr list) "@"
+		      (write-to-string (get-universal-time)))))
+    (list login-string)))
+
 (defun &hr-login-do (stream)
-  (let ((credentials (&hr-login-prompt stream)))
+  (let* ((credentials (&hr-login-prompt stream))
+	 (credentialstring (&hr-login-string credentials)))
     (setf *systemlogin* (car credentials))
     (setf *systempassword* (cadr credentials))))
 
