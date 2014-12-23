@@ -121,6 +121,30 @@
   (terpri stream)
   (force-output stream))
 
+;; example API string
+;; evaluate (+ 3 5) 1001 3628285196 0103020119 bnlkZWw6bXVjbHJAMzYyODI4NTc0Mw==
+;; example simplized API string
+;; evaluate (+ 3 5)
+
+(defun &hr-api/evaluate (string stream)
+  (let ((result (eval (read-from-string string))))
+    (format stream "STREAM>> evaluating: ~a" string)
+    (format *standard-output* "STDIO>> evaluating: ~a~&" string)
+    (terpri stream)
+    (terpri *standard-output*)
+    (format stream ">> ~a" result)
+    (format *standard-output* ">> ~a~&" result)
+    (terpri stream)
+    (terpri *standard-output*)
+    (force-output stream)
+    (force-output *standard-output*)))
+
+(defun &hr-api/evaluate-p (line)
+  (let ((list-command-arg
+	 (cl-ppcre:split "\\s+" line :limit 2)))
+    (if (< (length list-command-arg) 2) nil
+	(cadr list-command-arg))))
+
 (defun handle-request (stream)
 ;; placeholder repl section of handler function family
   (let ((line (read-line2 stream)))
@@ -130,6 +154,9 @@
     (terpri *standard-output*)
     (force-output stream)
     (force-output *standard-output*)
+    (let ((eval-p (&hr-api/evaluate-p line)))
+      (when eval-p (progn (&hr-api/evaluate eval-p stream)
+			  (handle-request stream))))
     (unless (or (string-equal line "quit") (string-equal line ""))
       (handle-request stream))))
 
