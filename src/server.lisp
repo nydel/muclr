@@ -1,7 +1,7 @@
 ;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
 
 (defpackage :muclr-server
-  (:use :cl :bordeaux-threads :cl-ppcre :ironclad :usocket)
+  (:use :cl :bordeaux-threads :cl-ppcre :usocket)
   (:export :start-server :stop-servers))
 
 (in-package :muclr-server)
@@ -20,10 +20,10 @@
 ;; credential utilities
 
 (defun hash-string (string &key digest-sequence)
-  (byte-array-to-hex-string
-   (digest-sequence
+  (ironclad:byte-array-to-hex-string
+   (ironclad:digest-sequence
     (if digest-sequence digest-sequence :md5)
-    (ascii-string-to-byte-array string))))
+    (ironclad:ascii-string-to-byte-array string))))
 
 ;; utilities for terminal interaction
 

@@ -31,6 +31,7 @@
   object is essentially a shared Common Lisp REPL instance that can be
   manipulated and discussed by multiple users."
   :depends-on (:bordeaux-threads
+	       :cl-daemonize
 	       :cl-ppcre
 	       :ironclad
 	       :usocket)
