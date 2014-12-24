@@ -6,7 +6,7 @@
 (in-package :cl-user)
 
 (defpackage :muclr-client
-  (:use :cl :bordeaux-threads :cl-ppcre :ironclad :usocket)
+  (:use :cl :bordeaux-threads :cl-ppcre :usocket)
   (:export :muclr-client-test))
 
 (in-package :muclr-client)
