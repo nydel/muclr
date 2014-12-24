@@ -25,3 +25,17 @@
       (close stream)
       (socket-close socket)
       result)))
+
+(defvar *muclr-input*)
+(defvar *muclr-output*)
+(defvar *muclr-stream*)
+(setf *muclr-output* (make-broadcast-stream))
+(setf *muclr-input* (make-concatenated-stream))
+(setf *muclr-stream* (make-two-way-stream *muclr-input* *muclr-output*))
+
+
+(defun init-muclr-connection (host port)
+  (socket-connect host port :local-port 0))
+
+;(defun start-muclr-client (host port)
+;  (

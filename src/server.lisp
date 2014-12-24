@@ -77,6 +77,38 @@
 ;; example simplized API string
 ;; evaluate (+ 3 5)
 
+(defvar *api-alist* nil)
+(setf *api-alist* '(("connect" . &hr-api/connect)
+		    ("evaluate" . &hr-api/evaluate)))
+
+(defvar *blacklist* nil)
+(setf *blacklist* '("null" "192 232 210 163" "foobar"))
+
+(defun &hr-api-lookup (string)
+  (assoc string *api-alist* :test #'string-equal))
+
+(defun &hr-api (line stream)
+  (let* ((list-command-arg
+	 (cl-ppcre:split "\\s+" line :limit 2))
+	(hr-api-lookup
+	 (&hr-api-lookup (car list-command-arg))))
+    (when hr-api-lookup
+      (funcall (cdr hr-api-lookup)
+	       (cadr list-command-arg)
+	       stream))))
+
+(defun &hr-api/connect (ipaddr stream)
+  (let ((allowed
+	 (if (member ipaddr *blacklist* :test #'string-equal) nil t)))
+    (format stream "STREAM>> connect returned ~a" allowed)
+    (format *standard-output* "STDIO>> connect returned ~a" allowed)
+    (terpri stream)
+    (terpri *standard-output*)
+    (force-output stream)
+    (force-output *standard-output*)))
+  
+
+
 (defun &hr-api/evaluate (string stream)
   (let ((result (eval (read-from-string string))))
     (format stream "STREAM>> evaluating: ~a" string)
@@ -107,9 +139,10 @@
     (terpri *standard-output*)
     (force-output stream)
     (force-output *standard-output*)
-    (let ((eval-p (&hr-api/evaluate-p line)))
-      (when eval-p (progn (&hr-api/evaluate eval-p stream)
-			  (handle-request stream))))
+    (&hr-api line stream)
+;    (let ((eval-p (&hr-api/evaluate-p line)))
+;      (when eval-p (progn (&hr-api/evaluate eval-p stream)
+;			  (handle-request stream))))
     (unless (or (string-equal line "quit") (string-equal line ""))
       (handle-request stream))))
 
