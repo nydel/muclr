@@ -1,4 +1,4 @@
-;;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
+;;;; -*- Mode: Lisp; -*-
 ;;;; $Id: client.lisp 110101 2014-12-23 02:27:00 PDT nydel $
 ;;;; $URL https://github.com/nydel/muclr/blob/master/src/client.lisp $
 ;;;; $HOMEPAGE http://www.muclr.org $

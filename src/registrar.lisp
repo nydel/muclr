@@ -1,4 +1,4 @@
-;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
+;;; -*- Mode: Lisp; -*-
 
 ;(ql:quickload '(:bordeaux-threads
 ;		:cl-ppcre
