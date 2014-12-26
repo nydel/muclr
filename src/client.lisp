@@ -14,7 +14,7 @@
 (defun muclr-client-test ()
   (format t "~%just a test function!~%"))
 
-(defun send-to-platform (string host port)
+(defun test-send-to-platform (string host port)
   (let* ((socket (socket-connect host port :local-port 0))
 	 (stream (socket-stream socket)))
     (write-line string stream)
@@ -26,16 +26,33 @@
       (socket-close socket)
       result)))
 
-(defvar *muclr-input*)
-(defvar *muclr-output*)
-(defvar *muclr-stream*)
-(setf *muclr-output* (make-broadcast-stream))
-(setf *muclr-input* (make-concatenated-stream))
-(setf *muclr-stream* (make-two-way-stream *muclr-input* *muclr-output*))
+(defvar *muclr-stream* nil)
+(defvar *muclr-socket* nil)
 
+(defun kill-muclr-stream ()
+  (unless *muclr-stream*
+    (progn
+      (setf *muclr-stream* nil)
+      (socket-close *muclr-socket*)
+      (setf *muclr-socket* nil))))
 
-(defun init-muclr-connection (host port)
+(defun init-muclr-socket (host port)
   (socket-connect host port :local-port 0))
 
-;(defun start-muclr-client (host port)
-;  (
+(defun init-muclr-stream (socket)
+  (socket-stream socket))
+
+(defun &init-muclr (host port)
+  (init-muclr-stream
+   (init-muclr-socket host port)))
+
+(defun init-muclr (host port)
+  (setf *muclr-socket* (&init-muclr host port))
+  (setf *muclr-stream* *muclr-socket*))
+
+(defun send-to-platform (arg)
+  (format *muclr-stream* arg)
+  (force-output *muclr-stream*)
+  (let ((result (read-line *muclr-stream*)))
+    (force-output *muclr-stream*)
+    result))

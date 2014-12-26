@@ -1,10 +1,47 @@
 ;;; -*- Mode: Lisp; Syntax: ANSI-Common-Lisp; Base: 10 -*-
 
 (defpackage :muclr-server
+  (:nicknames :server :ms)
   (:use :cl :bordeaux-threads :cl-ppcre :usocket)
   (:export :start-server :stop-servers))
 
 (in-package :muclr-server)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; massive redesign begins here on 2012-12-25|17:45:30PDT
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defclass muclr-listener ()
+  ((handler :initform #'handler-basic :initarg :handler
+	    :accessor muclr-listener-handler)
+   (address :initform #(0 0 0 0) :initarg :address
+	    :accessor muclr-listener-address)
+   (port :initform 9902 :initarg :port :accessor muclr-listener-port)
+   (socket :initform nil :initarg :socket :accessor muclr-listener-socket)
+   (master-thread :initform nil :accessor muclr-listener-master-thread)
+   (master-thread-sleep-time :initform 60
+			     :accessor muclr-listener-master-thread-sleep-time)
+   (threads :initform nil :accessor muclr-listener-threads)
+   (information :initform #'new-muclr-information :initarg :information
+		:accessor muclr-listener-information)
+   (username :initform nil :initarg :username :accessor muclr-listener-username)))
+
+(defstruct muclr-thread
+  pid
+  last-hit
+  (quitting nil)
+  state)
+;  (state created :type (member created accepting connected finished dead nil)))
+
+(defstruct muclr-information
+  login-time
+  username
+  last-hit)
+
+(defun new-muclr-information (&key login-time username last-hit)
+  (make-muclr-information :login-time (if login-time login-time (get-universal-time))
+			  :username username
+			  :last-hit (get-universal-time)))
 
 (defvar *platformname* nil)
 (defvar *systemversion* nil)
@@ -15,7 +52,13 @@
 (setf *platformname* "muclr&")
 (setf *systemversion* "1.10.101")
 (setf *hostname* "main.platforms.muclr.org")
-(setf *port* 9912)
+(setf *port* 9902)
+(setf *systemlogin* "guest")
+(setf *systempassword* "")
+
+(defvar *server* nil)
+(defvar *socket* nil)
+(defvar *port* nil)
 
 ;; credential utilities
 
@@ -146,36 +189,93 @@
     (unless (or (string-equal line "quit") (string-equal line ""))
       (handle-request stream))))
 
+(defvar *my-stream* nil)
+
 (defun &hr-master (stream)
 ;; all the handling functions in the family called together
 ;  (&hr-greet stream)
 ;  (&hr-login-do stream)
   (handle-request stream))
+
+(defun &hr-master-init (stream)
+  (setf *my-stream* stream)
+  (&hr-master stream))
   
   ;; handlers need to be consolidated
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; muclr handler overhaul of 2014-12-25|17:53:40PDT begins here
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun handler-basic (stream listener)
+  (let* ((line (read-line2 stream)))
+    (format stream "~&~a:~a => ~a"
+	    (muclr-listener-address listener)
+	    (muclr-listener-port listener)
+	    line)
+    (terpri stream)
+    (force-output stream)
+    (unless (string-equal line "quit")
+      (handler-basic stream listener))))
+
+(defun &handler-basic (stream listener)
+  (format stream "~&basic handler.")
+  (format stream "~&you've connected to ~a on port ~a."
+	  (muclr-listener-address listener)
+	  (muclr-listener-port listener))
+  (format stream "~&this has been the generic muclr listener. goodbye.~%")
+  (values)
+  (force-output stream)
+  (terpri stream)
+  (handler-basic stream listener))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun run-muclr-server (socket)
+  (loop
+     (wait-for-input socket)
+     (let ((stream (socket-stream (socket-accept socket)))
+	   (listener (make-instance 'muclr-listener :port *port* :socket socket)))
+       (make-thread (lambda ()
+		      (with-open-stream (stream stream)
+			(&handler-basic stream listener)))
+		    :name (format nil "muclr request handler for ~a" socket)))))
 
 
 (defun run-server (socket)
   (loop (wait-for-input socket)
      (let ((stream (socket-stream (socket-accept socket))))
        (make-thread (lambda () (with-open-stream (stream stream)
-				 (&hr-master stream)))
+				 (&hr-master-init stream)))
 		    :name "muclr-server-request-handler-thread"))))
 
 (defun start-server (port)
   (let ((socket (socket-listen *wildcard-host* port :reuse-address t)))
-    (make-thread (lambda () (unwind-protect
-				 (run-server socket)
-			      (socket-close socket)))
-		 :name "muclr-server-thread")))
+    (setf *socket* socket)
+    (setf *port* port)
+    (setf *server*
+	  (make-thread
+	   (lambda ()
+	     (unwind-protect
+		  (run-muclr-server socket)
+	       (socket-close socket)))
+	   :name (format nil "port ~a muclr server" port)))))
 
 (defun stop-servers ()
   (mapcar #'destroy-thread (remove-if-not
 			    (lambda (y)
 			      (string-equal
-			       (slot-value y 'sb-thread::name) "muclr-server-thread"))
+			       (subseq (slot-value y 'sb-thread::name) 0 5) "muclr"))
+			    (all-threads)))
+  (mapcar #'destroy-thread (remove-if-not
+			     (lambda (y)
+			       (and
+				(string-equal
+				 (subseq (slot-value y 'sb-thread::name) 0 4) "port")
+				(string-equal
+				 (subseq (slot-value y 'sb-thread::name) (- (length (slot-value y 'sb-thread::name)) 12))
+				 "muclr server")))
 			    (all-threads))))
