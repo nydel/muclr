@@ -1,58 +1,63 @@
-;;;; -*- Mode: Lisp; -*-
-;;;; $Id: client.lisp 110101 2014-12-23 02:27:00 PDT nydel $
-;;;; $URL https://github.com/nydel/muclr/blob/master/src/client.lisp $
-;;;; $HOMEPAGE http://www.muclr.org $
+(ql:quickload '(:bordeaux-threads
+		:cl-ppcre
+		:usocket))
 
 (in-package :cl-user)
 
 (defpackage :muclr-client
+  (:nicknames :client)
   (:use :cl :bordeaux-threads :cl-ppcre :usocket)
-  (:export :muclr-client-test))
+  (:export #:connect
+	   :*socket*
+	   :*stream*))
 
 (in-package :muclr-client)
 
-(defun muclr-client-test ()
-  (format t "~%just a test function!~%"))
+(defvar *socket* nil)
+(defvar *stream* nil)
 
-(defun test-send-to-platform (string host port)
-  (let* ((socket (socket-connect host port :local-port 0))
-	 (stream (socket-stream socket)))
-    (write-line string stream)
-    (force-output stream)
-    (let ((result (read-line stream)))
-      (write-line "quit" stream)
-      (force-output stream)
-      (close stream)
-      (socket-close socket)
-      result)))
+(defun clean-line (string)
+  (regex-replace-all "\\r" string ""))
 
-(defvar *muclr-stream* nil)
-(defvar *muclr-socket* nil)
+(defun read-line2 (&optional (stream *standard-input*) (sb-impl::eof-error-p t) eof-value recursive-p)
+  (clean-line
+   (read-line (when stream stream)
+	      (when sb-impl::eof-error-p sb-impl::eof-error-p)
+	      (when eof-value eof-value)
+	      (when recursive-p recursive-p))))
 
-(defun kill-muclr-stream ()
-  (unless *muclr-stream*
-    (progn
-      (setf *muclr-stream* nil)
-      (socket-close *muclr-socket*)
-      (setf *muclr-socket* nil))))
+(defun connect (host port)
+  (let* ((socket (usocket:socket-connect host port))
+	 (stream (usocket:socket-stream socket)))
+    (setf *socket* socket)
+    (setf *stream* stream)))
 
-(defun init-muclr-socket (host port)
-  (socket-connect host port :local-port 0))
+(defun force-to-stream (string stream)
+  (format stream "~a" string)
+  (terpri stream)
+  (force-output stream))
 
-(defun init-muclr-stream (socket)
-  (socket-stream socket))
+(defun open-read-thread (stream)
+  (bt:make-thread
+   (lambda ()
+     (loop for line = (read-line stream)
+	  when line do
+	  (format *standard-output* line)
+	  (terpri *standard-output*)
+	  (force-output *standard-output*)))))
 
-(defun &init-muclr (host port)
-  (init-muclr-stream
-   (init-muclr-socket host port)))
+(defun open-read-thread2 (stream)
+  (bt:make-thread
+   (lambda ()
+     (loop for line = (read stream)
+	  when line do
+	  (format *standard-output* line)
+	  (terpri *standard-output*)
+	  (force-output *standard-output*)))))
 
-(defun init-muclr (host port)
-  (setf *muclr-socket* (&init-muclr host port))
-  (setf *muclr-stream* *muclr-socket*))
-
-(defun send-to-platform (arg)
-  (format *muclr-stream* arg)
-  (force-output *muclr-stream*)
-  (let ((result (read-line *muclr-stream*)))
-    (force-output *muclr-stream*)
-    result))
+(defun repl-like-thing (stream &optional loop-p)
+  (unless loop-p (open-read-thread stream))
+  (let ((line (read-line2 *standard-input*)))
+    (force-to-stream line stream)
+    (unless (or (string-equal line "quit") (string-equal line "exit"))
+      (repl-like-thing stream t))))

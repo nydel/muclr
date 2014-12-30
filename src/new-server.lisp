@@ -36,6 +36,33 @@
 (defun build-connection (&key socket hostname port stream thread timestamp)
   (make-instance 'connection :socket socket :hostname hostname :port port :stream stream :thread thread :timestamp timestamp :username nil))
 
+(defclass platform ()
+  ((hostname :initarg :hostname
+	     :initform nil
+	     :accessor platform-hostname)
+   (port :initarg :port
+	 :initform nil
+	 :accessor platform-port)
+   (title :initarg :title
+	  :initform nil
+	  :accessor platform-title)
+   (description :initarg :description
+		:initform nil
+		:accessor platform-description)
+   (users :initarg :users
+	  :initform nil
+	  :accessor platform-users)
+   (number-users :initarg :number-users :initform 0 :accessor platform-number-users)
+   (max-users :initarg :max-users
+	      :initform 19
+	      :accessor platform-max-users)
+   (timestamp :initarg :timestamp
+	      :initform (get-universal-time)
+	      :accessor platform-timestamp)
+   (lease :initarg :lease
+	  :initform nil
+	  :accessor platform-lease)))
+
 (defvar *master-socket* nil)
 (defvar *connections* nil)
 (defvar *clos-connections* nil)
