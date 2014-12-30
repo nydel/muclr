@@ -41,7 +41,7 @@
 (defun new-muclr-information (&key login-time username last-hit)
   (make-muclr-information :login-time (if login-time login-time (get-universal-time))
 			  :username username
-			  :last-hit (get-universal-time)))
+			  :last-hit (if last-hit last-hit (get-universal-time))))
 
 (defvar *platformname* nil)
 (defvar *systemversion* nil)
@@ -49,12 +49,14 @@
 (defvar *port* nil)
 (defvar *systemlogin* nil)
 (defvar *systempassword* nil)
+(defvar *loginstring* nil)
 (setf *platformname* "muclr&")
 (setf *systemversion* "1.10.101")
 (setf *hostname* "main.platforms.muclr.org")
 (setf *port* 9902)
 (setf *systemlogin* "guest")
 (setf *systempassword* "")
+(setf *loginstring* "")
 
 (defvar *server* nil)
 (defvar *socket* nil)
@@ -107,7 +109,8 @@
   (let* ((credentials (&hr-login-prompt stream))
 	 (credentialstring (&hr-login-string credentials)))
     (setf *systemlogin* (car credentials))
-    (setf *systempassword* (cadr credentials))))
+    (setf *systempassword* (cadr credentials))
+    (setf *loginstring* credentialstring)))
 
 (defun &hr-greet (stream)
   (format stream "~&gateway connect to ~a version ~a on ~a port ~d"
