@@ -1,6 +1,4 @@
-(ql:quickload '(:bordeaux-threads
-		:cl-ppcre
-		:usocket))
+;;;; -*- Mode: Lisp; -*-
 
 (in-package :cl-user)
 
@@ -8,6 +6,9 @@
   (:nicknames :client)
   (:use :cl :bordeaux-threads :cl-ppcre :usocket)
   (:export #:connect
+	   #:open-read-thread
+	   #:force-to-stream
+	   #:repl-like-thing
 	   :*socket*
 	   :*stream*))
 
