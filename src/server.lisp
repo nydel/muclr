@@ -4,6 +4,10 @@
   (:nicknames :server)
   (:use :cl :bordeaux-threads :cl-ppcre :usocket)
   (:export :*master-socket*
+	   :*connections*
+	   :*clos-connections*
+	   :connection
+	   #:start-server
 	   #:start-master-socket))
 
 (in-package :muclr-server)
@@ -72,10 +76,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defun clean-line (string)
-  (regex-replace-all "\\r" string ""))
+;(defun clean-line (string)
+;  (regex-replace-all "\\r" string ""))
 
-(defun read-line2 (&optional (stream *standard-input*) (sb-impl::eof-error-p t) eof-value recursive-p)
+(defun clean-line (line)
+  (string-right-trim (string #\Return) line))
+
+(defun read-line-no-cr (&optional
+			    (stream *standard-input*)
+			    (sb-impl::eof-error-p t)
+			    eof-value recursive-p)
   (clean-line
    (read-line (when stream stream)
 	      (when sb-impl::eof-error-p sb-impl::eof-error-p)
@@ -106,16 +116,16 @@
       (force-output-to-connection "you're already logged in!" con t t)
       (let ((login (progn
 		     (format stream "login: ") (force-output stream)
-		     (read-line2 stream)))
+		     (read-line-no-cr stream)))
 	    (pass (progn
 		    (format stream "password: ") (force-output stream)
-		    (read-line2 stream))))
+		    (read-line-no-cr stream))))
 	(when (api/valid-user login pass)
 	  (setf (connection-username con) login)))))
 
 (defun request-handler (stream &optional con login-p)
   (when login-p (api/login stream con))
-  (let ((line (read-line2 stream))
+  (let ((line (read-line-no-cr stream))
 	(con (if con con
 		 (car (remove-if-not
 		       (lambda (y)

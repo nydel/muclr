@@ -17,10 +17,13 @@
 (defvar *socket* nil)
 (defvar *stream* nil)
 
-(defun clean-line (string)
-  (regex-replace-all "\\r" string ""))
+(defun clean-line (line)
+  (string-right-trim (string #\Return) line))
 
-(defun read-line2 (&optional (stream *standard-input*) (sb-impl::eof-error-p t) eof-value recursive-p)
+(defun read-line-no-cr (&optional
+			  (stream *standard-input*)
+			  (sb-impl::eof-error-p t)
+			  eof-value recursive-p)
   (clean-line
    (read-line (when stream stream)
 	      (when sb-impl::eof-error-p sb-impl::eof-error-p)
@@ -58,7 +61,7 @@
 
 (defun repl-like-thing (stream &optional loop-p)
   (unless loop-p (open-read-thread stream))
-  (let ((line (read-line2 *standard-input*)))
+  (let ((line (read-line-no-cr *standard-input*)))
     (force-to-stream line stream)
     (unless (or (string-equal line "quit") (string-equal line "exit"))
       (repl-like-thing stream t))))
