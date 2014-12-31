@@ -111,24 +111,28 @@
   (let ((userpass (assoc user *users* :test #'string-equal)))
     (when (string-equal pass (cdr userpass)) t)))
 
-(defun api/prompt (stream prompt)
-  (format stream "~a" prompt)
-  (force-output stream)
+(defun api/prompt (stream con prompt)
+;  (format stream "~a" prompt)
+;  (force-output stream)
+  (force-output-to-connection prompt con t t)
   (read-line-no-cr stream))
 
 (defun api/login (stream con)
   (if (connection-username con)
       (force-output-to-connection "you're already logged in!" con t t)
-      (let ((login (api/prompt stream "login: "))
-	    (pass (api/prompt stream "password: ")))
+      (let ((login (api/prompt stream con "login: "))
+	    (pass (api/prompt stream con "password: ")))
 ;      (let ((login (progn
 ;		     (format stream "login: ") (force-output stream)
 ;		     (read-line-no-cr stream)))
 ;	    (pass (progn
 ;		    (format stream "password: ") (force-output stream)
 ;		    (read-line-no-cr stream))))
-	(when (api/valid-user login pass)
-	  (setf (connection-username con) login)))))
+	(if (api/valid-user login pass)
+	    (progn
+	      (setf (connection-username con) login)
+	      (force-output-to-connection (format nil "muclr: you're logged in as ~a" login) con t t))
+	    (force-output-to-connection (format nil "muclr/error: ~a is an invalid login" login) con t t)))))
 
 (defun request-handler (stream &optional con login-p)
   (when login-p (api/login stream con))

@@ -44,7 +44,7 @@
 (defun open-read-thread (stream)
   (bt:make-thread
    (lambda ()
-     (loop for line = (read-line stream)
+     (loop for line = (read-line-no-cr stream)
 	  when line do
 	  (format *standard-output* line)
 	  (terpri *standard-output*)
