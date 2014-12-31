@@ -111,15 +111,22 @@
   (let ((userpass (assoc user *users* :test #'string-equal)))
     (when (string-equal pass (cdr userpass)) t)))
 
+(defun api/prompt (stream prompt)
+  (format stream "~a" prompt)
+  (force-output stream)
+  (read-line-no-cr stream))
+
 (defun api/login (stream con)
   (if (connection-username con)
       (force-output-to-connection "you're already logged in!" con t t)
-      (let ((login (progn
-		     (format stream "login: ") (force-output stream)
-		     (read-line-no-cr stream)))
-	    (pass (progn
-		    (format stream "password: ") (force-output stream)
-		    (read-line-no-cr stream))))
+      (let ((login (api/prompt stream "login: "))
+	    (pass (api/prompt stream "password: ")))
+;      (let ((login (progn
+;		     (format stream "login: ") (force-output stream)
+;		     (read-line-no-cr stream)))
+;	    (pass (progn
+;		    (format stream "password: ") (force-output stream)
+;		    (read-line-no-cr stream))))
 	(when (api/valid-user login pass)
 	  (setf (connection-username con) login)))))
 
@@ -133,7 +140,9 @@
     (format stream "~a@~s:~s>> ~a"
 	    (if (connection-username con) (connection-username con) (string "STREAM"))
 	    (connection-hostname con) (connection-port con) line)
-    (format *standard-output* "STDIO>> ~a~&" line)
+    (format *standard-output* "~a@~s:~s>> ~a"
+	    (if (connection-username con) (connection-username con) (string "STDIO"))
+	    (connection-hostname con) (connection-port con) line)
     (terpri stream)
     (terpri *standard-output*)
     (force-output stream)
