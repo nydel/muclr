@@ -4,6 +4,7 @@
   (:nicknames :server)
   (:use :cl :bordeaux-threads :cl-ppcre :usocket)
   (:export :*master-socket*
+	   :*server*
 	   :*connections*
 	   :*clos-connections*
 	   :connection
@@ -112,8 +113,6 @@
     (when (string-equal pass (cdr userpass)) t)))
 
 (defun api/prompt (stream con prompt)
-;  (format stream "~a" prompt)
-;  (force-output stream)
   (force-output-to-connection prompt con t t)
   (read-line-no-cr stream))
 
@@ -122,17 +121,21 @@
       (force-output-to-connection "you're already logged in!" con t t)
       (let ((login (api/prompt stream con "login: "))
 	    (pass (api/prompt stream con "password: ")))
-;      (let ((login (progn
-;		     (format stream "login: ") (force-output stream)
-;		     (read-line-no-cr stream)))
-;	    (pass (progn
-;		    (format stream "password: ") (force-output stream)
-;		    (read-line-no-cr stream))))
 	(if (api/valid-user login pass)
 	    (progn
 	      (setf (connection-username con) login)
 	      (force-output-to-connection (format nil "muclr: you're logged in as ~a" login) con t t))
 	    (force-output-to-connection (format nil "muclr/error: ~a is an invalid login" login) con t t)))))
+
+(defun api/evaluate-p (string)
+  (when (> (length string) 8)
+    (when (string-equal (subseq string 0 8) "evaluate")
+      (subseq string 9))))
+
+(defun api/evaluate (con arg)
+  (let ((result (eval (read-from-string arg))))
+    (force-output-to-connection (format nil "evaluating ~a..." arg) con t t)
+    (force-output-to-connection result con t t)))
 
 (defun request-handler (stream &optional con login-p)
   (when login-p (api/login stream con))
@@ -153,6 +156,8 @@
     (force-output *standard-output*)
     (when (string-equal line "/login")
       (request-handler stream con t))
+    (let ((arg (api/evaluate-p line)))
+      (when arg (api/evaluate con arg)))
     (unless (or (string-equal line "quit") (string-equal line ""))
       (request-handler stream con))))
 
@@ -192,9 +197,17 @@
   (setf *master-socket* (&start-master-socket port))
   (setf *connections* (list *master-socket*)))
 
+(defvar *server* nil)
+
 (defun start-server (port)
   (start-master-socket port)
-  (make-thread
-   (lambda ()
-     (run-server))
-   :name (format nil "port ~d muclr server" port)))
+  (setf *server*
+	(make-thread
+	 (lambda ()
+	   (run-server))
+	 :name (format nil "port ~d muclr server" port))))
+
+(defun stop-server ()
+  (let ((server (shiftf *server* nil)))
+    (when server
+      (destroy-thread server))))

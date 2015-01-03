@@ -9,6 +9,7 @@
 	   #:open-read-thread
 	   #:force-to-stream
 	   #:repl-like-thing
+	   #:with-muclr-stream
 	   :*socket*
 	   :*stream*))
 
@@ -65,3 +66,6 @@
     (force-to-stream line stream)
     (unless (or (string-equal line "quit") (string-equal line "exit"))
       (repl-like-thing stream t))))
+
+(defun with-muclr-stream (&key stream api arg)
+  (format stream "~a~C~a~C" api #\Space arg #\Newline))
