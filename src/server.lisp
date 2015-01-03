@@ -9,6 +9,7 @@
 	   :*clos-connections*
 	   :connection
 	   #:start-server
+	   #:stop-server
 	   #:start-master-socket))
 
 (in-package :muclr-server)
@@ -95,15 +96,31 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defmacro output-and-echo (destination control-string &rest format-arguments)
+  `(let ((stream (make-broadcast-stream ,destination *standard-output*)))
+     (format stream ,control-string ,format-arguments)
+     (force-output stream)))
 
-(defun force-output-to-connection (string con &optional (terpri-before-p t)(terpri-after-p t))
-  (let ((stream (connection-stream con))
-	(hostname (connection-hostname con))
-	(port (connection-port con)))
+(defun force-output-to-connection (string con &optional (local-echo t)(terpri-before-p t)(terpri-after-p t))
+  (let* ((stream (connection-stream con))
+	 (hostname (connection-hostname con))
+	 (port (connection-port con))
+	 (username (connection-username con))
+	 (broadcast (when local-echo (make-broadcast-stream stream *standard-output*))))
+    (when broadcast (setq stream broadcast))
     (when terpri-before-p (terpri stream) (force-output stream))
-    (format stream "STREAM@~s:~s>> ~a" hostname port string)
+    (format stream "~a@~s:~s>> ~a" (if username username "STREAM") hostname port string)
     (force-output stream)
     (when terpri-after-p (terpri stream) (force-output stream))))
+
+(defun &clean-connections ()
+  (remove-if-not
+   (lambda (y)
+     (thread-alive-p (connection-thread y)))
+   *clos-connections*))
+
+(defun clean-connections ()
+  (setf *clos-connections* (&clean-connections)))
 
 ;(defun api/greet (stream con)
 ;  (format stream "~%~80;~%
@@ -113,19 +130,19 @@
     (when (string-equal pass (cdr userpass)) t)))
 
 (defun api/prompt (stream con prompt)
-  (force-output-to-connection prompt con t t)
+  (force-output-to-connection prompt con t t t)
   (read-line-no-cr stream))
 
 (defun api/login (stream con)
   (if (connection-username con)
-      (force-output-to-connection "you're already logged in!" con t t)
+      (force-output-to-connection "you're already logged in!" con t t t)
       (let ((login (api/prompt stream con "login: "))
 	    (pass (api/prompt stream con "password: ")))
 	(if (api/valid-user login pass)
 	    (progn
 	      (setf (connection-username con) login)
-	      (force-output-to-connection (format nil "muclr: you're logged in as ~a" login) con t t))
-	    (force-output-to-connection (format nil "muclr/error: ~a is an invalid login" login) con t t)))))
+	      (force-output-to-connection (format nil "muclr: you're logged in as ~a" login) con t t t))
+	    (force-output-to-connection (format nil "muclr/error: ~a is an invalid login" login) con t t t)))))
 
 (defun api/evaluate-p (string)
   (when (> (length string) 8)
@@ -134,8 +151,12 @@
 
 (defun api/evaluate (con arg)
   (let ((result (eval (read-from-string arg))))
-    (force-output-to-connection (format nil "evaluating ~a..." arg) con t t)
-    (force-output-to-connection result con t t)))
+    (force-output-to-connection (format nil "evaluating ~a..." arg) con t t t)
+    (force-output-to-connection result con t t t)))
+
+(defun api/exit (con)
+  (force-output-to-connection "exiting!" con t t t)
+  (setf *clos-connections* (remove con *clos-connections*)))
 
 (defun request-handler (stream &optional con login-p)
   (when login-p (api/login stream con))
@@ -158,7 +179,9 @@
       (request-handler stream con t))
     (let ((arg (api/evaluate-p line)))
       (when arg (api/evaluate con arg)))
-    (unless (or (string-equal line "quit") (string-equal line ""))
+    (when (string-equal line "exit")
+      (api/exit con))
+    (unless (or (string-equal line "quit") (string-equal line "") (string-equal line "exit"))
       (request-handler stream con))))
 
 (defun handle-client-input (socket)
@@ -199,15 +222,36 @@
 
 (defvar *server* nil)
 
+(defclass server ()
+  ((socket :initarg :socket
+	   :initform nil
+	   :accessor server-socket)
+   (thread :initarg :thread
+	   :initform nil
+	   :accessor server-thread)))
+
+(defun build-server (&key socket thread)
+  (make-instance 'server
+		 :socket socket
+		 :thread thread))
+
 (defun start-server (port)
-  (start-master-socket port)
   (setf *server*
-	(make-thread
-	 (lambda ()
-	   (run-server))
-	 :name (format nil "port ~d muclr server" port))))
+	(build-server :socket
+		      (start-master-socket port)
+		      :thread
+		      (make-thread
+		       (lambda ()
+			 (run-server))
+		       :name (format nil "port ~d muclr server" port)))))
+
+;(defun stop-server ()
+;  (let ((server (shiftf *server* nil)))
+;    (when server
+;      (destroy-thread server))))
 
 (defun stop-server ()
-  (let ((server (shiftf *server* nil)))
-    (when server
-      (destroy-thread server))))
+  (when *server*
+    (socket-close (car (server-socket *server*)))
+    (destroy-thread (server-thread *server*))
+    (setf *server* nil)))
