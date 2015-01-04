@@ -1,6 +1,7 @@
-###MUCLR###
+## MUCLR ##
 *    Multi-User Common Lisp REPL
 *    Version 1.10.101 Alpha
+
 #### Table of Contents
 + 01. PURPOSE
 + 02. ABSTRACT
