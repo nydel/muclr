@@ -38,7 +38,9 @@
 	     :accessor connection-username)))
 
 (defun build-connection (&key socket hostname port stream thread timestamp)
-  (make-instance 'connection :socket socket :hostname hostname :port port :stream stream :thread thread :timestamp timestamp :username nil))
+  (make-instance 'connection :socket socket :hostname hostname :port port
+                             :stream stream :thread thread :timestamp timestamp
+                             :username nil))
 
 (defclass platform ()
   ((hostname :initarg :hostname
