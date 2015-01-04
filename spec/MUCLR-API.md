@@ -1,11 +1,36 @@
 #MUCLR
-Multi-User Common Lisp REPL
-Version 1.10.101 Alpha
-##PURPOSE
-For reasons both technical and social, the open-source community's ratio of
-rewriting to expanding is far too large; while I'll not go into philosophy
-here, suffice to say that :MUCLR aims to change the way that Common Lisp hack-
-ers can work together on a project. Rather than the tried & true method of git-
-like forking, modification, request for pullback, then final pull, we aim to
-offer a shared REPL space accessible, and separate, from your local Common Lisp
-REPL instance.
+*    Multi-User Common Lisp REPL
+*    Version 1.10.101 Alpha
+#### Table of Contents ####
++ 01. PURPOSE
++ 02. ABSTRACT
++ 03. LEGAL
++ 04. MUCLR PACKAGE
++ + 01. REGISTRAR
++ + 02. SERVER
++ + 03. CLIENT
++ 05. MUCLR API
++ + 01. CLIENT TO SERVER
++ + 02. SERVER TO REGISTRAR
++ + 03. CLIENT TO REGISTRAR
+## 01. PURPOSE
+purpose
+## 02. ABSTRACT
+abstract
+## 03. LEGAL
+legal
+## 04. MUCLR PACKAGE
+muclr package
+### 01. REGISTRAR
+for servers to be catalogued
+### 02. SERVER
+creating instances of muclr
+### 03. CLIENT
+querying registrar for servers and communicating with server instances
+## 05. MUCLR API
+yay this is the actual API
+### 01. CLIENT TO SERVER
+stuff
+### 02. SERVER TO REGISTRAR
+stuff
+### 03. CLIENT TO REGISTRAR
