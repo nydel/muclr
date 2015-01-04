@@ -15,26 +15,6 @@
 
 (in-package :muclr-client)
 
-(defclass muclr-api-request ()
-  ((version :initarg :version
-	    :initform nil
-	    :accessor api-version)
-   (client-lisp :initarg :client-lisp
-		:initform nil
-		:accessor api-client-lisp)
-   (method :initarg :method
-	   :initform nil
-	   :accessor api-method)
-   (content :initarg :content
-	    :initform nil
-	    :accessor api-content)
-   (timestamp :initarg :timestamp
-	      :initform nil
-	      :accessor api-timestamp)
-   (token :initarg :token
-	  :initform nil
-	  :accessor api-token)))
-
 (defvar *socket* nil)
 (defvar *stream* nil)
 
