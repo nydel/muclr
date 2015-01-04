@@ -5,14 +5,39 @@
   (:use :cl :bordeaux-threads :cl-ppcre :usocket)
   (:export :*master-socket*
 	   :*server*
+	   :*muclr-servers*
 	   :*connections*
 	   :*clos-connections*
+	   :muclr-server
 	   :connection
 	   #:start-server
 	   #:stop-server
 	   #:start-master-socket))
 
 (in-package :muclr-server)
+
+(defvar *muclr-servers* nil)
+
+(defclass muclr-server ()
+  ((hostname :initarg :hostname
+	     :initform nil
+	     :accessor muclr-server-hostname)
+   (ip-addr :initarg :ip-addr
+	    :initform nil
+	    :accessor muclr-server-ip-addr)
+   (port :initarg :port
+	 :initform nil
+	 :accessor muclr-server-port)
+   (socket :initarg :socket
+	   :initform nil
+	   :accessor muclr-server-socket)))
+
+(defun build-muclr-server (&key hostname ip-addr port socket)
+  (make-instance 'muclr-server
+		 :hostname hostname
+		 :ip-addr ip-addr
+		 :port port
+		 :socket socket))
 
 (defclass connection ()
   ((socket :initarg :socket
