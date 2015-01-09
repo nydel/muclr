@@ -17,7 +17,16 @@
  
 
 ## 01. PURPOSE ##
-purpose
+
+`Multi-User Common Lisp REPL`, or `MUCLR`, means to connect Common Lisp programmers to a shared REPL to which they can all send forms for evaluation
+in real time.
+
+Each user of any given `MUCLR Platform` connects from his own instance of
+Common Lisp using the `:MUCLR` package. The `REPL` from which the `CLIENT`
+connects is separate from the `PLATFORM` so that users may issue forms for
+evaluation to the `MUCLR SERVER INSTANCE` aka `PLATFORM` but may not control
+the `REPL` of any other connected user.
+
 ## 02. ABSTRACT ##
 abstract
 ## 03. LEGAL ##
