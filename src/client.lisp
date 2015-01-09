@@ -60,7 +60,8 @@
 	  (terpri *standard-output*)
 	  (force-output *standard-output*)))))
 
-(defun repl-like-thing (stream &optional loop-p)
+(defun repl-like-thing (&optional stream loop-p)
+  (unless stream (setq stream *stream*))
   (unless loop-p (open-read-thread stream))
   (let ((line (read-line-no-cr *standard-input*)))
     (force-to-stream line stream)

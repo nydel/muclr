@@ -132,6 +132,8 @@
      (force-output stream)))
 
 (defun force-output-to-connection (string con &optional (local-echo t)(terpri-before-p t)(terpri-after-p t))
+  (unless (thread-alive-p (connection-thread con))
+    (return-from force-output-to-connection "connection specified is of null state!"))
   (let* ((stream (connection-stream con))
 	 (hostname (connection-hostname con))
 	 (port (connection-port con))
@@ -269,7 +271,10 @@
 		 :thread thread
 		 :passphrase passphrase))
 
-(defun start-server (port &optional passphrase)
+(defun start-server (port &key passphrase force)
+  (when *server*
+    (unless force
+      (return-from start-server "already running a server. use key :FORCE to override.")))
   (setf *server*
 	(build-server :socket
 		      (start-master-socket port)
