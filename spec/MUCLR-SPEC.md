@@ -45,11 +45,33 @@ The Common Lisp package `MUCLR` is composed of three primary sub-systems, the
 systems `MUCLR-REGISTRAR`, `MUCLR-SERVER`, and `MUCLR-CLIENT`.
 
 ### 01. REGISTRAR ###
-for servers to be catalogued
+
+The `REGISTRAR` serves primarily as intermediary between `SERVER` and `CLIENT`, a balancing act that requires several primary features. Many of these depend upon class objects defined within the scope of `CLOS` and most - perhaps all - of them at least deal with the `Common Lisp Object System` as utilized by `MUCLR` specifically.
+
+#### 01. PLATFORM ####
+
+After a `SERVER` is created, it can be registered with the `REGISTRAR`, at which point it becomes a `PLATFORM`.
+
+The `CLIENT` can query the `REGISTRAR` for a list of `PLATFORMS` and connect to one directly using the information provided.
+
+#### 02. LEASE ####
+
+The `LEASE` object informs the validity of a `SERVER` aka `PLATFORM` or `CLIENT` registration. A `SERVER` must request &/or present a valid `LEASE` in order to proceed to query for `PLATFORM` status aproval. A `CLIENT` must request &/or present a valid `LEASE` as the initialization of its credentials for querying the `REGISTRAR` - as in for a list of `PLATFORMS` - as well as for querying a `PLATFORM` aka querying a `SERVER` through the `REGISTRAR` - and as well as for querying a `SERVER` directly.
+
+Each `LEASE` is comprised, in part, of a start-time and a duration. Should a `SERVER` allow for its `LEASE` to expire, it will no longer be validated as, or listed among other, `PLATFORM` objects. However, `LEASE` objects can be renewed through query to the `REGISTRAR` for both `PLATFORMS` and validated `CLIENTS` alike, that is, a `LEASE` can be made to continue to exist with validity for an indefinite period of time.
+
+#### 03. CLIENT ####
+
+As a `SERVER` becomes a `PLATFORM` with a valid `LEASE` and a query for registration, so does a `CLIENT` of default type `TOURIST` become of the registered type `VISA` in the same manner. Some `PLATFORM` instances will require a `VISA CLIENT` whereas others will accept `TOURIST CLIENT` connections as `SPECTATORS` or even as fully-fledged users.
+
 ### 02. SERVER ###
+
 creating instances of muclr
+
 ### 03. CLIENT ###
-querying registrar for servers and communicating with server instances
+
+A `CLIENT` is considered of type `TOURIST` unless it has obtained a `LEASE` as well as validity from the `REGISTRAR` at which point it may become a `VISA`.
+
 ## 05. MUCLR API ###
 yay this is the actual API
 ### 01. CLIENT TO SERVER ###
