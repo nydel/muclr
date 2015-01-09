@@ -28,11 +28,20 @@ evaluation to the `MUCLR SERVER INSTANCE` aka `PLATFORM` but may not control
 the `REPL` of any other connected user.
 
 ## 02. ABSTRACT ##
+
 abstract
+
+
 ## 03. LEGAL ##
-legal
+
+See file `LICENSE` in the project's root directory for licensing information.
+
+
 ## 04. MUCLR PACKAGE ##
-muclr package
+
+The Common Lisp package `MUCLR` is composed of three primary sub-systems, the
+systems `MUCLR-REGISTRAR`, `MUCLR-SERVER`, and `MUCLR-CLIENT`.
+
 ### 01. REGISTRAR ###
 for servers to be catalogued
 ### 02. SERVER ###
