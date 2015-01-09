@@ -32,6 +32,7 @@
   manipulated and discussed by multiple users."
   :depends-on (:bordeaux-threads
 	       :cl-ppcre
+	       :drakma
 	       :ironclad
 	       :usocket)
   :components ((:module "src"

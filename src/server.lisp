@@ -30,7 +30,10 @@
 	 :accessor muclr-server-port)
    (socket :initarg :socket
 	   :initform nil
-	   :accessor muclr-server-socket)))
+	   :accessor muclr-server-socket)
+   (passphrase :initarg :passphrase
+	       :initform nil
+	       :accessor muclr-server-passphrase)))
 
 (defun build-muclr-server (&key hostname ip-addr port socket)
   (make-instance 'muclr-server
@@ -255,14 +258,18 @@
 	   :accessor server-socket)
    (thread :initarg :thread
 	   :initform nil
-	   :accessor server-thread)))
+	   :accessor server-thread)
+   (passphrase :initarg :passphrase
+	       :initform nil
+	       :accessor server-passphrase)))
 
-(defun build-server (&key socket thread)
+(defun build-server (&key socket thread passphrase)
   (make-instance 'server
 		 :socket socket
-		 :thread thread))
+		 :thread thread
+		 :passphrase passphrase))
 
-(defun start-server (port)
+(defun start-server (port &optional passphrase)
   (setf *server*
 	(build-server :socket
 		      (start-master-socket port)
@@ -270,7 +277,9 @@
 		      (make-thread
 		       (lambda ()
 			 (run-server))
-		       :name (format nil "port ~d muclr server" port)))))
+		       :name (format nil "port ~d muclr server" port))
+		      :passphrase
+		      (when passphrase passphrase))))
 
 ;(defun stop-server ()
 ;  (let ((server (shiftf *server* nil)))
