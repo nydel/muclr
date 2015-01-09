@@ -1,1 +1,1 @@
-See [MUCLR-SPEC.md](https://github.com/nydel/muclr/blob/master/spec/MUCLR-SPEC.md).
+The `MUCLR` package, including its sub-systems and API, is canonically [technologically standardized](https://en.wikipedia.org/wiki/Specification) as outlined in the file  [MUCLR-SPEC.md](https://github.com/nydel/muclr/blob/master/spec/MUCLR-SPEC.md).
