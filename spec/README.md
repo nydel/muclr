@@ -1,1 +1,1 @@
-!inc(MUCLR-SPEC.md)
+See [MUCLR-SPEC.md](https://github.com/nydel/muclr/blob/master/spec/MUCLR-SPEC.md).
