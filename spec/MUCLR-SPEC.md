@@ -31,7 +31,7 @@ the `REPL` of any other connected user.
 
 ## 02. ABSTRACT ##
 
-We begin with `Multi-User **Common Lisp** REPL` intending to connect `CL` hackers to a shared space, but we design the specification that it may soon be forked, canonically or otherwise, to apply the same theory to other dialects of the `Lisp` programming languages as well as non-Lisp interpreted languages such as `Python` and `Perl` which can, like `Common Lisp`, be used as `Read Evaluate Print Loop` instances.
+We begin first with `Multi-User *Common Lisp* REPL` intending to connect `CL` hackers to a shared space, but we design the specification that it may soon be forked, canonically or otherwise, to apply the same theory to other dialects of the `Lisp` programming languages as well as non-Lisp interpreted languages such as `Python` and `Perl` which can, like `Common Lisp`, be used as `Read Evaluate Print Loop` instances.
 
 
 ## 03. LEGAL ##
