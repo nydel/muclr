@@ -99,6 +99,147 @@
     (set-lease-hash lease passphrase)
     lease))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar *master-registrar-socket* nil)
+(defvar *registrar-connections* nil)
+(defvar *clos-registrar-connections* nil)
+
+(defclass registrar-connection ()
+  ((socket :initarg :socket
+	   :initform nil
+	   :accessor connection-socket)
+   (hostname :initarg :hostname
+	     :initform nil
+	     :accessor connection-hostname)
+   (port :initarg :port
+	 :initform nil
+	 :accessor connection-port)
+   (stream :initarg :stream
+	   :initform nil
+	   :accessor connection-stream)
+   (thread :initarg :thread
+	   :initform nil
+	   :accessor connection-thread)
+   (timestamp :initarg :timestamp
+	      :initform (get-universal-time)
+	      :accessor connection-timestamp)
+   (username :initarg :username
+	     :initform nil
+	     :accessor connection-username)))
+
+(defun build-registrar-connection (&key socket hostname port stream thread timestamp)
+  (make-instance 'connection :socket socket :hostname hostname :port port
+                             :stream stream :thread thread :timestamp timestamp
+                             :username nil))
+
+(defmacro output-and-echo (destination control-string &rest format-arguments)
+  `(let ((stream (make-broadcast-stream ,destination *standard-output*)))
+     (format stream ,control-string ,format-arguments)
+     (force-output stream)))
+
+(defun force-output-to-connection (string con &optional (local-echo t)(terpri-before-p t)(terpri-after-p t))
+  (unless (thread-alive-p (connection-thread con))
+    (return-from force-output-to-connection "connection specified is of null state!"))
+  (let* ((stream (connection-stream con))
+	 (hostname (connection-hostname con))
+	 (port (connection-port con))
+	 (username (connection-username con))
+	 (broadcast (when local-echo (make-broadcast-stream stream *standard-output*))))
+    (when broadcast (setq stream broadcast))
+    (when terpri-before-p (terpri stream) (force-output stream))
+    (format stream "~a@~s:~s>> ~a" (if username username "STREAM") hostname port string)
+    (force-output stream)
+    (when terpri-after-p (terpri stream) (force-output stream))))
+
+(defun &clean-connections ()
+  (remove-if-not
+   (lambda (y)
+     (thread-alive-p (connection-thread y)))
+   *clos-registrar-connections*))
+
+(defun clean-connections ()
+  (setf *clos-registrar-connections* (&clean-connections)))
+
+(defun registrar-request-handler (stream &optional con)
+  (let ((line (read-line-no-cr stream))
+	(con (if con con
+		 (car (remove-if-not
+		       (lambda (y)
+			 (equal (connection-stream y) stream)) *clos-registrar-connections*)))))
+    (format stream "~a@~s:~s>> ~a"
+	    (if (connection-username con) (connection-username con) (string "STREAM"))
+	    (connection-hostname con) (connection-port con) line)
+    (format *standard-output* "~a@~s:~s>> ~a"
+	    (if (connection-username con) (connection-username con) (string "STDIO"))
+	    (connection-hostname con) (connection-port con) line)
+    (terpri stream)
+    (terpri *standard-output*)
+    (force-output stream)
+    (force-output *standard-output*)
+    (unless (or (string-equal line "quit") (string-equal line "") (string-equal line "exit"))
+      (registrar-request-handler stream con))))
+    
+
+(defun handle-incoming-input (socket)
+  (let* ((stream (socket-stream socket))
+	 (con (build-registrar-connection :socket socket :stream stream :timestamp (get-universal-time)
+					  :hostname (get-peer-address socket) :port (get-peer-port socket)
+					  :thread nil)))
+    (setf (connection-thread con)
+	  (make-thread
+	   (lambda ()
+	     (with-open-stream (stream stream)
+	       (registrar-request-handler stream))
+	     :name (format nil "muclr incoming registrar stream at ~d" (get-universal-time)))))
+    (push con *clos-registrar-connections*)))
+
+(defun handle-incoming-connect (socket)
+  (handle-incoming-input socket))
+
+(defun run-registrar ()
+  (loop
+     (loop :for s :in (wait-for-input *registrar-connections* :ready-only t) :do
+	(if (eq s *master-registrar-socket*)
+	    (let ((new (socket-accept s)))
+	      (setf *registrar-connections* (nconc *registrar-connections* `(,s)))
+	      (handle-incoming-connect new))
+	    (handle-incoming-input s)))))
+
+(defun &start-master-registrar (port)
+  (let ((socket (socket-listen *wildcard-host* port :reuse-address t)))
+    socket))
+
+(defun start-master-registrar (port)
+  (setf *master-registrar-socket* (&start-master-registrar port))
+  (setf *registrar-connections* (list *master-registrar-socket*)))
+
+
+(defvar *registrar* nil)
+
+(defclass registrar ()
+  ((socket :initarg :socket
+	   :initform nil
+	   :accessor registrar-socket)
+   (thread :initarg :thread
+	   :initform nil
+	   :accessor registrar-thread)))
+
+(defun build-registrar (&key socket thread)
+  (make-instance 'registrar
+		 :socket socket
+		 :thread thread))
+
+(defun start-registrar (port)
+  (setf *registrar*
+	(build-registrar :socket
+			 (start-master-registrar port)
+			 :thread
+			 (make-thread
+			  (lambda ()
+			    (run-registrar))
+			  :name (format nil "port ~d muclr registrar" port)))))
+
 
 ;(defun api-server/lease-request ()
   
