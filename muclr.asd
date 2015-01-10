@@ -34,6 +34,7 @@
 	       :cl-ppcre
 	       :drakma
 	       :ironclad
+	       :local-time
 	       :usocket)
   :components ((:module "src"
 		:serial t

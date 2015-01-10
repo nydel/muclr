@@ -71,7 +71,10 @@
                              :username nil))
 
 (defclass platform ()
-  ((hostname :initarg :hostname
+  ((server :initarg :server
+	   :initform nil
+	   :accessor platform-server)
+   (hostname :initarg :hostname
 	     :initform nil
 	     :accessor platform-hostname)
    (port :initarg :port
@@ -96,6 +99,19 @@
    (lease :initarg :lease
 	  :initform nil
 	  :accessor platform-lease)))
+
+(defun build-platform (&key server hostname port title description users number-users max-users timestamp lease)
+  (make-instance 'platform
+		 :server server
+		 :hostname (if hostname hostname (machine-instance))
+		 :port (if port port (get-local-port (server-socket *server*)))
+		 :title (if title title (format nil "MUCLR on ~a" (machine-instance)))
+		 :description (if description description "Platform Administrator Should Add a Description!")
+		 :users (if users users nil)
+		 :number-users (if number-users number-users 0)
+		 :max-users (if max-users max-users 19)
+		 :timestamp (if timestamp timestamp (local-time:now))
+		 :lease (if lease lease nil)))
 
 (defvar *master-socket* nil)
 (defvar *connections* nil)
