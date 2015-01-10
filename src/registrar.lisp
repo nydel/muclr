@@ -129,9 +129,9 @@
 	     :accessor connection-username)))
 
 (defun build-registrar-connection (&key socket hostname port stream thread timestamp)
-  (make-instance 'connection :socket socket :hostname hostname :port port
-                             :stream stream :thread thread :timestamp timestamp
-                             :username nil))
+  (make-instance 'registrar-connection :socket socket :hostname hostname :port port
+		 :stream stream :thread thread :timestamp timestamp
+		 :username nil))
 
 (defmacro output-and-echo (destination control-string &rest format-arguments)
   `(let ((stream (make-broadcast-stream ,destination *standard-output*)))
