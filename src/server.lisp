@@ -113,6 +113,48 @@
 		 :timestamp (if timestamp timestamp (local-time:now))
 		 :lease (if lease lease nil)))
 
+(defvar *reg-socket* nil)
+(defvar *reg-stream* nil)
+
+(defun reg-connect (host port)
+  (let* ((socket (usocket:socket-connect host port))
+	 (stream (usocket:socket-stream socket)))
+    (setf *reg-socket* socket)
+    (setf *reg-stream* stream)))
+
+(defun reg-force-to-stream (string stream)
+  (format stream "~a" string)
+  (terpri stream)
+  (force-output stream))
+
+(defun reg-open-read-thread (stream)
+  (bt:make-thread
+   (lambda ()
+     (loop for line = (read-line-no-cr stream)
+	  when line do
+	  (format *standard-output* line)
+	  (terpri *standard-output*)
+	  (force-output *standard-output*)))
+   :name (format nil "muclr server-to-registrar thread ~d" (get-universal-time))))
+
+(defun reg-repl-like-thing (&optional stream loop-p)
+  (unless stream (setq stream *reg-stream*))
+  (unless loop-p (reg-open-read-thread stream))
+  (let ((line (read-line-no-cr *standard-input*)))
+    (reg-force-to-stream line stream)
+    (unless (or (string-equal line "quit") (string-equal line "exit"))
+      (reg-repl-like-thing stream t))))
+
+(defvar *reg-thread* nil)
+
+(defun reg-offer-platform (registrar registrar-port platform)
+  (reg-connect registrar registrar-port)
+  (setf *reg-thread* (reg-open-read-thread *reg-stream*))
+;  (format *reg-stream* ":MUCLR REQUEST-LEASE ~S" platform)
+  (format *reg-stream* ":MUCLR TEST-FUNCTION 10")
+  (terpri *reg-stream*)
+  (force-output *reg-stream*))
+
 (defvar *master-socket* nil)
 (defvar *connections* nil)
 (defvar *clos-connections* nil)
