@@ -104,7 +104,7 @@
   (make-instance 'platform
 		 :server server
 		 :hostname (if hostname hostname (machine-instance))
-		 :port (if port port (get-local-port (server-socket *server*)))
+		 :port (if port port (get-local-port (car (server-socket *server*))))
 		 :title (if title title (format nil "MUCLR on ~a" (machine-instance)))
 		 :description (if description description "Platform Administrator Should Add a Description!")
 		 :users (if users users nil)
