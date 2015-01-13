@@ -19,6 +19,12 @@
 	 :initform nil
 	 :accessor user-credential-hash)))
 
+(defun split-user-credential (uc)
+  (format t "~a ~a ~a"
+	  (user-credential-uid uc)
+	  (user-credential-username uc)
+	  (user-credential-hash uc)))
+
 (defun &load-credentials-db ()
   (with-open-file (@db *db-credentials-path* :direction :input)
     (loop for line = (read @db nil 'eof)
