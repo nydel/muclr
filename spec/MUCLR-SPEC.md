@@ -8,11 +8,16 @@
 + 01. PURPOSE
 + 02. ABSTRACT
 + 03. LEGAL
-+ 04. MUCLR PACKAGE
++ 04. SECURITY
+ + 01. LOGIN CREDENTIALS
+ + 02. PLATFORM LEASE
+ + 03. CLIENT TOKENS
+ + 04. REPL STATE BACKUP
++ 05. MUCLR PACKAGE
  + 01. REGISTRAR
  + 02. SERVER
  + 03. CLIENT
-+ 05. MUCLR API
++ 06. MUCLR API
  + 01. CLIENT TO SERVER
  + 02. SERVER TO REGISTRAR
  + 03. CLIENT TO REGISTRAR
@@ -39,7 +44,27 @@ We begin first with `Multi-User *Common Lisp* REPL` intending to connect `CL` ha
 See file `LICENSE` in the project's root directory for licensing information.
 
 
-## 04. MUCLR PACKAGE ##
+## 04. SECURITY ##
+
+Any `SOCKET` connection over the IP Suite is potentially dangerous, but limitless control, simple credentials, server leasing and token-based session validation are just a few of the tools implemented into the canonical distribution of `MUCLR` at the moment.
+
+#### 01. LOGIN CREDENTIALS ####
+
+more soon
+
+#### 02. PLATFORM LEASE ####
+
+more soon
+
+#### 03. CLIENT TOKENS ####
+
+more soon
+
+#### 04. REPL STATE BACKUP ####
+
+more soon
+
+## 05. MUCLR PACKAGE ##
 
 The Common Lisp package `MUCLR` is composed of three primary sub-systems, the
 systems `MUCLR-REGISTRAR`, `MUCLR-SERVER`, and `MUCLR-CLIENT`.
