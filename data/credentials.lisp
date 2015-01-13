@@ -68,7 +68,6 @@
   (push-user :uname uname :password password))
 
 (defun valid-p (uname pass)
-;  (when (stringp uname) (setq uname (read-from-string uname)))
   (setq uname (digest-hash (string uname) :digest :sha1))
   (let ((userp
 	 (remove-if-not
