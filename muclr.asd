@@ -36,7 +36,10 @@
 	       :ironclad
 	       :local-time
 	       :usocket)
-  :components ((:module "src"
+  :components ((:module "data"
+	        :serial t
+		:components ((:file "credentials")))
+	       (:module "src"
 		:serial t
 		:components ((:file "server")
 			     (:file "registrar")
