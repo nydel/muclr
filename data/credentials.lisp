@@ -1,72 +1,83 @@
 (defpackage :muclr-credentials
   (:nicknames :credentials)
-  (:use :cl :bordeaux-threads :cl-ppcre :usocket)
-  (:export #:init-credentials))
+  (:use :cl)
+  (:export :init-credentials
+	   :add-user
+	   :push-user
+	   :valid-p
+	   :user))
 
 (in-package :muclr-credentials)
 
 (defparameter *db-credentials-path* #P"data/credentials.db")
 (defvar *db-credentials* nil)
 
-(defclass user-credential ()
-  ((uid :initarg :uid
-	:initform nil
-	:accessor user-credential-uid)
-   (username :initarg :username
-	     :initform nil
-	     :accessor user-credential-username)
-   (hash :initarg :hash
-	 :initform nil
-	 :accessor user-credential-hash)))
-
-(defun split-user-credential (uc)
-  (format t "~a,~a,~a"
-	  (user-credential-uid uc)
-	  (user-credential-username uc)
-	  (user-credential-hash uc)))
-
-(defun &load-credentials-db ()
-  (with-open-file (@db *db-credentials-path* :direction :input)
-    (loop for line = (read-line @db nil 'eof)
-       until (equal line 'eof)
-	 collect line)))
-
-(defun load-credential-db ()
-  (setf *db-credentials* (&load-credentials-db)))
-
-(defun save-credentials-db ()
-  (with-open-file (@db *db-credentials-path* :direction :output
-		       :if-exists :rename :if-does-not-exist :create)
-    (when *db-credentials*
-      (loop for i in *db-credentials* do
-	   (format @db "~{~a~}" (mapcar (lambda (y) (split-user-credentials y)) *db-credentials*))))))
-
 (defun digest-hash (string &key digest)
+  (setq string (string-downcase string))
   (ironclad:byte-array-to-hex-string
    (ironclad:digest-sequence
     (if digest digest :sha1)
     (ironclad:ascii-string-to-byte-array string))))
 
-(defun &build-user-credential (&key uid username pw)
-  (make-instance 'user-credential
-		 :uid (if uid uid (get-universal-time))
-		 :username username
-		 :hash (digest-hash pw :digest :md5)))
+(defstruct (user (:type list))
+  uname pwhash)
 
-(defun build-user-credential (&key uid username pw)
+(defun build-user (&key uname password hashp)
+  (make-user :uname (if hashp uname
+			(digest-hash uname :digest :sha1))
+	     :pwhash (if hashp password
+			 (digest-hash password :digest :md5))))
+
+(defun write-user-db ()
+  (with-open-file (@db *db-credentials-path*
+		       :direction :output
+		       :if-exists :overwrite
+		       :if-does-not-exist :create)
+      (format @db "~{~a~^~&~}" *db-credentials*)
+      (force-output @db)))
+
+(defun &load-user-db ()
+  (with-open-file (@db *db-credentials-path*
+		       :direction :input
+		       :if-does-not-exist :create)
+    (loop for user = (read-line @db nil 'eof nil)
+	 until (eq user 'eof)
+	 collect user)))
+
+(defun load-user-db ()
+  (let ((users (&load-user-db)))
+    (setf *db-credentials*
+	  (mapcar
+	   (lambda (y)
+	     (list (string-downcase (car y))
+		   (string-downcase (cadr y))))
+		   users))))
+
+
+(defun &push-user (&key uname password hashp)
   (push
-   (&build-user-credential :uid uid
-			   :username username
-			   :pw pw)
+   (build-user :uname uname :password password :hashp hashp)
    *db-credentials*))
 
-(defun &rebuild-user-credential (string)
-  (split "\\," string))
+(defun push-user (&key uname password hashp)
+  (&push-user :uname uname :password password :hashp hashp)
+  (write-user-db)
+  (load-user-db))
 
-;(defun rebuild-user-credentials (string)
-;  (let ((creds (&rebuild-user-credential string)))
-;    (build-user-credential :uid (first creds)
-;			   :username (second creds)
-;			   :pw
+(defun add-user (&key uname password)
+  (push-user :uname uname :password password))
 
-(defun init-credentials ())
+(defun valid-p (uname pass)
+;  (when (stringp uname) (setq uname (read-from-string uname)))
+  (setq uname (digest-hash (string uname) :digest :sha1))
+  (let ((userp
+	 (remove-if-not
+	  (lambda (y)
+	    (equal uname (string (car y))))
+	  *db-credentials*)))
+    (when (string-equal (digest-hash (string pass) :digest :md5)
+			(string (cadar userp)))
+      t)))
+
+(defun init-credentials ()
+  (load-user-db))
